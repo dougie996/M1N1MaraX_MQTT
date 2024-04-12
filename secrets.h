@@ -2,3 +2,4 @@
  #define WLAN_PASS "yourpw"
  #define MQTT_SERVER "192.168.3.100"
  #define MQTT_PORT 1883
+ #define MQTT_UPDATE_INTERVAL 30
