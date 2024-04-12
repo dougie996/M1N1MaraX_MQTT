@@ -69,8 +69,7 @@ String ssid = WLAN_SSID;
 String pass = WLAN_PASS;
 const String mqttserver = MQTT_SERVER;
 int mqttport = MQTT_PORT;
-String pushServiceHost = "pushsafer.com";
-int pushServicePort = 80;
+int mqttupint = MQTT_UPDATE_INTERVAL * 1000;  // MQTT Update Interval from secrets.h
 
 
 WiFiClient WIFI_CLIENT;
@@ -82,7 +81,7 @@ char steamTemp[32];
 char heatExchangeTemp[32];
 char heatingMode[32];
 char heatingElement[32];
-char flag[32];
+char pump[32];
 
 //Space for the serial Port 
 const byte numChars = 32;
@@ -129,7 +128,7 @@ void getMaraData() {
     Example Data: C1.12,116,124,093,0840,1,05\n every ~400-500ms
     Length: 27
     [Pos] [Data] [Describtion]
-    0)      C     Coffee Mode (C) or SteamMode (V) // "+" in case of Mara X V2
+    0)      C     Coffee Mode (C) or SteamMode (V) // "+" in case of Mara X V2 Steam Mode
     -       1.22  Software Version
     1)      116   current steam temperature (Celsisus)
     2)      124   target steam temperature (Celsisus)
@@ -157,13 +156,6 @@ void getMaraData() {
     }
   }
   //
-  //#ifdef PUSH_MESSAGE
-  //Check if machine is ready
-  //if (maraData[1].toInt() == maraData[2].toInt() && maraData[3].toInt() > 90 && initialPushSent == false) {
-  //  sendPushSaferMessage();
-  //  initialPushSent = true;
-  //}
-  //#endif
   //
   if (millis() - serialTimeout > 999) {  // are there 1000ms passed after last chr rexeived?
     isMaraOff = 1;                       // Mara is off 
@@ -204,8 +196,8 @@ strcpy(heatingMode,receivedChars+18);
 heatingMode[4] = '\0';
 strcpy(heatingElement,receivedChars+23);
 heatingElement[1] = '\0';
-strcpy(flag,receivedChars+25);
-flag[1] = '\0';
+strcpy(pump,receivedChars+25);
+pump[1] = '\0';
 
 }
 // -----------------------------------------------------------
@@ -221,7 +213,7 @@ void reconnect() {
     MQTT_CLIENT.connect("Kaffeemaschine_MQTT");
 
     // Wait some time to space out connection requests
-    delay(3000);
+    delay(500);
   }
 
   Serial.println("MQTT connected");
@@ -233,30 +225,42 @@ void publishMQTT(){
     reconnect();
   }
   long now = millis();
-  if (now - lastMsg > 30000) {
+  if (now - lastMsg > mqttupint) {            // Check MQTT Timer Interval
      lastMsg = now;
-     String msg="";
-      msg= "1";
-       char message[58];
-       msg.toCharArray(message,58);
        //publish sensor data to MQTT broker
+       //
+       // Mode & Software Version (5+2 Chr)
       maraData[0].toCharArray(softwareVersion,7);
       //strncat(softwareVersion, "\0",2);                                         // append 2 chr \n to CharArray
       MQTT_CLIENT.publish("fhem/MaraX/softwareVersion", softwareVersion);
+      //
+      // Steam Temp (3+2 Chr)
       maraData[1].toCharArray(steamTemp,5);
       //strncat(steamTemp, "\0",2);
       MQTT_CLIENT.publish("fhem/MaraX/steamTemp", steamTemp);
+      //
+      // Target Steam Temp (3+2 Chr)
       maraData[2].toCharArray(targetSteamTemp,5);
       //strncat(targetSteamTemp, "\0",2);
       MQTT_CLIENT.publish("fhem/MaraX/targetSteamTemp", targetSteamTemp);
+      //
+      // Water Temperature (3+2 Chr)
       maraData[3].toCharArray(heatExchangeTemp,5);
       //strncat(heatExchangeTemp, "\0",2);
       MQTT_CLIENT.publish("fhem/MaraX/heatExchangeTemp", heatExchangeTemp); 
+      //
+      // Boost Mode Counter (4+2 Chr)
+      maraData[4].toCharArray(heatingMode,6);
       MQTT_CLIENT.publish("fhem/MaraX/heatingMode", heatingMode);
-      maraData[6].toCharArray(heatingElement,3);
+      //
+      // Heater Status (1+2 Chr)
+      maraData[5].toCharArray(heatingElement,3);
       MQTT_CLIENT.publish("fhem/MaraX/heatingElement", heatingElement);
-      MQTT_CLIENT.publish("fhem/MaraX/flag", flag);
-      MQTT_CLIENT.publish("fhem/MaraX/pump", message);
+      //
+      // Pump Status (1+2 Chr)
+      maraData[6].toCharArray(pump,3);
+      MQTT_CLIENT.publish("fhem/MaraX/pump", pump);
+      //
       //
       Serial.println("MQTT Data published");
      }
@@ -497,11 +501,11 @@ void updateView() {
         if (maraData[0].substring(0, 1) == "C") {     // [0] = Mode & Version number
           // Coffee mode
           display.drawBitmap(115, 0, coffeeCup12, 12, 12, WHITE);   // Draw Coffe Cup upper right corner
-          display.drawBitmap(100, 0, wifiicon, 12, 12, WHITE);   // Draw WiFi Icon upper right corner
+          display.drawBitmap(58, 0, wifiicon, 12, 12, WHITE);       // Draw WiFi Icon upper center
         } else {
           // Steam mode
           display.drawBitmap(115, 0, steam12, 12, 12, WHITE);       // Draw Steam upper right corner
-          display.drawBitmap(100, 0, wifiicon, 12, 12, WHITE);   // Draw WiFi Icon upper right corner
+          display.drawBitmap(58, 0, wifiicon, 12, 12, WHITE);       // Draw WiFi Icon upper center
         }
       }
     }
