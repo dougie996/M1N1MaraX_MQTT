@@ -2,12 +2,12 @@
 /* Copyright (C) 2024 Ralf Grafe
 This file is partly based on MaraX-Shot-Monitor <https://github.com/Anlieger/MaraX-Shot-Monitor>.
 
-M1N1MaraX_Web is a free software you can redistribute it and/or modify
+M1N1MaraX_MQTT is a free software you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-M1N1MaraX_Web is distributed in the hope that it will be useful,
+M1N1MaraX_MQTT is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
@@ -41,7 +41,7 @@ GNU General Public License for more details.
 #define DEBUG false
 
 //Internals
-int state = LOW;
+//int state = LOW;
 char on = LOW;
 char off = HIGH;
 
@@ -103,20 +103,23 @@ SoftwareSerial mySerial(D5, D6, INVERSE_LOGIC);  // Rx, Tx, Inverse_Logic
 Timer t;
 
 void setup() {
+  // Setup Display
   display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS);
   display.clearDisplay();
   display.display();
-  Serial.begin(9600);
-  mySerial.begin(9600);
-  //mySerial.write(0x11);  // this is XON Flow Control Chr ... do not use. 
+  // Setup WiFi
   WiFi.begin(ssid, pass);
   WiFi.hostname("MaraX");
     while (WiFi.status() != WL_CONNECTED) {
       delay(500);
     }
-
+    // Setup Serial
+  Serial.begin(9600);       // Serial Monitor
+  mySerial.begin(9600);     // MaraX Serial Interface
+  Serial.println("WiFi connected");
+  //mySerial.write(0x11);  // this is XON Flow Control Chr ... do not use. 
   pinMode(LED_BUILTIN, OUTPUT);
-  delay(1000);
+  delay(100);
   //
   t.every(1000, updateView);
 }
@@ -362,7 +365,8 @@ void updateView() {
         // display.print("You missed");
       }
 
-      if (tt >= 1 && timerCount <= 23) {
+      if (tt >= 1) {
+      // if (tt >= 1 && timerCount <= 23) {
         if (tt == 8) {
           display.drawBitmap(17, 14, coffeeCup30_01, 30, 30, WHITE);
           Serial.println(tt);
@@ -426,7 +430,7 @@ void updateView() {
         }
       }
 
-      if (maraData[3].toInt() < 100) {      // [3] = Mara Hx temperature ... take care of 2 or 3 digit value display
+      if (maraData[3].toInt() < 100) {      // [3] = Mara Hx temperature ... taking care of 2 or 3 digit value display
         display.setCursor(19, 50);
       } else {
         display.setCursor(9, 50);
@@ -500,12 +504,20 @@ void updateView() {
         //Draw machine mode
         if (maraData[0].substring(0, 1) == "C") {     // [0] = Mode & Version number
           // Coffee mode
-          display.drawBitmap(115, 0, coffeeCup12, 12, 12, WHITE);   // Draw Coffe Cup upper right corner
-          display.drawBitmap(58, 0, wifiicon, 12, 12, WHITE);       // Draw WiFi Icon upper center
+          display.drawBitmap(115, 0, coffeeCup12, 12, 12, WHITE);   // Draw Coffe Cup upper right 
+          if (MQTT_CLIENT.connected()) {
+          display.drawBitmap(60, 0, wifiicon, 12, 12, WHITE);       // Draw WiFi Icon upper center
+          }else {
+            display.fillRect(60, 0, 12, 12, BLACK);                 // Clear WiFi Icon when not connected
+          }
         } else {
           // Steam mode
           display.drawBitmap(115, 0, steam12, 12, 12, WHITE);       // Draw Steam upper right corner
-          display.drawBitmap(58, 0, wifiicon, 12, 12, WHITE);       // Draw WiFi Icon upper center
+          if (MQTT_CLIENT.connected()) {
+          display.drawBitmap(60, 0, wifiicon, 12, 12, WHITE);       // Draw WiFi Icon upper center
+          } else {
+            display.fillRect(60, 0, 12, 12, BLACK);                 // Clear WiFi Icon when not connected
+          }
         }
       }
     }
