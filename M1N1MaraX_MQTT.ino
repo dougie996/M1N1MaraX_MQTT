@@ -40,18 +40,11 @@ GNU General Public License for more details.
 
 #define DEBUG false
 
-//Internals
-//int state = LOW;
-char on = LOW;
-char off = HIGH;
-
 long timerStartMillis = 0;
 long timerStopMillis = 0;
-long timerDisplayOffMillis = 0;
 long timerPumpDelay =0;
 int timerCount = 0;
 bool timerStarted = false;
-bool displayOn = false;
 
 long serialTimeout = 0;
 char buffer[BUFFER_SIZE];
@@ -274,27 +267,25 @@ void detectChanges() {
   if (maraData[6].toInt() == 1) {       // [6] == 1 is Flag for Pump ON
     if (!timerStarted) {                // Timer is not started
       timerStartMillis = millis();      // Save current time
-      timerStarted = true;              // Save that Timer was started
-      displayOn = true;                 //
+      timerStarted = true;              // Set Timer was started Flag
       Serial.println("Pump ON");        // Message for Serial Monitor
     }
   }
   //
   if (maraData[6].toInt() == 0) {       // [6] == 0 is Flag for Pump OFF
-   if (timerStarted) {                  // Check if timer was started
-      if (timerStopMillis == 0) {       //
+   if (timerStarted) {                  // Check if Timer started Flag is set
+      if (timerStopMillis == 0) {       // Save current time
         timerStopMillis = millis();     //
       }
-      if (millis() - timerStopMillis > 500) {
-        timerStarted = false;
-        timerStopMillis = 0;
-        timerDisplayOffMillis = millis();
-        display.invertDisplay(false);
-        Serial.println("Pump OFF");
+      if (millis() - timerStopMillis > 500) {       // this will be executed 500ms after Pump has been switched off
+        timerStarted = false;                       // Clear Timer was started Flag
+        timerStopMillis = 0;                        // Clear Stop Timer
+        //display.invertDisplay(false);
+        Serial.println("Pump OFF");                 // Message on serial Port
         tt = 8;
         //
-        timerPumpDelay = millis();                  // Save current time
-        while (millis() - timerPumpDelay < 4000) {    // wait 4 seconds
+        timerPumpDelay = millis();                    // Save current time
+        while (millis() - timerPumpDelay < 1000) {    // wait 1 second
             delay(200);
         }
       }
@@ -303,16 +294,16 @@ void detectChanges() {
     timerStopMillis = 0;
   }
 }
-
+// -----------------------------------------------------------
 String getTimer() {
   char outMin[2];
-  if (timerStarted) {
-    timerCount = (millis() - timerStartMillis) / 1000;
+  if (timerStarted) {                                           // Look for Timer started Flag
+    timerCount = (millis() - timerStartMillis) / 1000;          // timerCount is (Now - Timer StartedTime)  in seconds
   } 
   if (timerCount > 99) {
     return "99";
   }
-  sprintf(outMin, "%02u", timerCount);
+  sprintf(outMin, "%02u", timerCount);                          // Format output String
   return outMin;
 }
 // -----------------------------------------------------------
@@ -342,26 +333,8 @@ void updateView() {
       display.fillRect(60, 9, 63, 55, BLACK);
       display.setTextSize(5);
       display.setCursor(68, 20);
-      display.print(getTimer());
+      display.print(getTimer());          // Display Seconds on screen
 
-      if (timerCount >= 20 && timerCount <= 24) { // Message for 20 - 24 sec
-        display.setTextSize(5);
-        display.setCursor(68, 20);
-        display.print(getTimer());
-
-        //display.setTextSize(1);
-        //display.setCursor(38, 2);
-        // display.print("Get ready");
-      }
-      if (timerCount > 24) {
-        display.setTextSize(5);
-        display.setCursor(68, 20);
-        display.print(getTimer());
-
-        // display.setTextSize(1);
-        // display.setCursor(35, 2);
-        // display.print("You missed");
-      }
 
       if (tt >= 1) {
       // if (tt >= 1 && timerCount <= 23) {
@@ -390,7 +363,7 @@ void updateView() {
           display.drawBitmap(17, 14, coffeeCup30_08, 30, 30, WHITE);
           Serial.println(tt);
         }
-        if (tt == 1 && timerCount <= 24) {
+        if (tt == 1) {          // Loop
           tt = 8;
         } else {
           tt--;
@@ -440,11 +413,14 @@ void updateView() {
       //Draw Line
       display.drawLine(66, 14, 66, 64, WHITE);
 
+
+     
+
       //Boiler
-      if (maraData[5].toInt() == 1) {
+      if (maraData[5].toInt() == 1) {               // Heater Flag is set
         display.setCursor(13, 0);
         display.setTextSize(1);
-        display.print("Heating up");
+        display.print("Heatup");                // Print Message on Screen
 
         if ((millis() - lastToggleTime) > 1000) {
           lastToggleTime = millis();
@@ -465,28 +441,29 @@ void updateView() {
           // display.print("");
         }
       } else {
-        display.print("");
+        display.print("");                                // Clear Heater Message
         display.fillCircle(3, 3, 3, BLACK);
-
-        //Draw machine mode
-        if (maraData[0].substring(0, 1) == "C") {     // [0] = Mode & Version number
-          // Coffee mode
-          display.drawBitmap(115, 0, coffeeCup12, 12, 12, WHITE);   // Draw Coffe Cup upper right 
-          if (MQTT_CLIENT.connected()) {
-          display.drawBitmap(60, 0, wifiicon, 12, 12, WHITE);       // Draw WiFi Icon upper center
-          }else {
-            display.fillRect(60, 0, 12, 12, BLACK);                 // Clear WiFi Icon when not connected
-          }
-        } else {
-          // Steam mode
-          display.drawBitmap(115, 0, steam12, 12, 12, WHITE);       // Draw Steam upper right corner
-          if (MQTT_CLIENT.connected()) {
-          display.drawBitmap(60, 0, wifiicon, 12, 12, WHITE);       // Draw WiFi Icon upper center
-          } else {
-            display.fillRect(60, 0, 12, 12, BLACK);                 // Clear WiFi Icon when not connected
-          }
-        }
       }
+
+
+      // WiFi Signal
+      if (MQTT_CLIENT.connected()) {
+      display.drawBitmap(60, 0, wifiicon, 12, 12, WHITE);       // Draw WiFi Icon upper center
+      }else {
+        display.fillRect(60, 0, 12, 12, BLACK);                 // Clear WiFi Icon when not connected
+      }
+
+      //Draw machine mode
+      if (maraData[0].substring(0, 1) == "C") {                   // [0] = Mode & Version number - Check first Character if "C"
+        // Coffee mode
+        display.drawBitmap(115, 0, coffeeCup12, 12, 12, WHITE);   // Draw Coffee Cup Icon upper right 
+      } else {
+        // Steam mode
+        display.drawBitmap(115, 0, steam12, 12, 12, WHITE);       // Draw Steam Icon upper right corner
+      }
+
+
+
     }
   }
 
