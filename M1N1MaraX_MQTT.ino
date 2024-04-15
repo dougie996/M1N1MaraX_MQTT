@@ -48,11 +48,11 @@ char off = HIGH;
 long timerStartMillis = 0;
 long timerStopMillis = 0;
 long timerDisplayOffMillis = 0;
+long timerPumpDelay =0;
 int timerCount = 0;
 bool timerStarted = false;
 bool displayOn = false;
 
-int prevTimerCount = 0;
 long serialTimeout = 0;
 char buffer[BUFFER_SIZE];
 int bufferIndex = 0;
@@ -276,7 +276,7 @@ void detectChanges() {
       timerStartMillis = millis();      // Save current time
       timerStarted = true;              // Save that Timer was started
       displayOn = true;                 //
-      Serial.println("Start pump");     // Message for Serial Monitor
+      Serial.println("Pump ON");        // Message for Serial Monitor
     }
   }
   //
@@ -290,10 +290,13 @@ void detectChanges() {
         timerStopMillis = 0;
         timerDisplayOffMillis = millis();
         display.invertDisplay(false);
-        Serial.println("Stop pump");
+        Serial.println("Pump OFF");
         tt = 8;
-
-        delay(4000);
+        //
+        timerPumpDelay = millis();                  // Save current time
+        while (millis() - timerPumpDelay < 4000) {    // wait 4 seconds
+            delay(200);
+        }
       }
     }
   } else {
@@ -305,12 +308,7 @@ String getTimer() {
   char outMin[2];
   if (timerStarted) {
     timerCount = (millis() - timerStartMillis) / 1000;
-    if (timerCount > 4) {
-      prevTimerCount = timerCount;
-    }
-  } else {
-    timerCount = prevTimerCount;
-  }
+  } 
   if (timerCount > 99) {
     return "99";
   }
@@ -397,38 +395,7 @@ void updateView() {
         } else {
           tt--;
         }
-      } else {
-        if (tt == 8) {
-          display.drawBitmap(17, 14, coffeeCup30_09, 30, 30, WHITE);
-          Serial.println(tt);
-        } else if (tt == 7) {
-          display.drawBitmap(17, 14, coffeeCup30_10, 30, 30, WHITE);
-          Serial.println(tt);
-        } else if (tt == 6) {
-          display.drawBitmap(17, 14, coffeeCup30_11, 30, 30, WHITE);
-          Serial.println(tt);
-        } else if (tt == 5) {
-          display.drawBitmap(17, 14, coffeeCup30_12, 30, 30, WHITE);
-          Serial.println(tt);
-        } else if (tt == 4) {
-          display.drawBitmap(17, 14, coffeeCup30_13, 30, 30, WHITE);
-          Serial.println(tt);
-        } else if (tt == 3) {
-          display.drawBitmap(17, 14, coffeeCup30_14, 30, 30, WHITE);
-          Serial.println(tt);
-        } else if (tt == 2) {
-          display.drawBitmap(17, 14, coffeeCup30_15, 30, 30, WHITE);
-          Serial.println(tt);
-        } else if (tt == 1) {
-          display.drawBitmap(17, 14, coffeeCup30_16, 30, 30, WHITE);
-          Serial.println(tt);
-        }
-        if (tt == 1) {    // tt gets count down from 8 to 1
-          tt = 8;
-        } else {
-          tt--;
-        }
-      }
+      } 
 
       if (maraData[3].toInt() < 100) {      // [3] = Mara Hx temperature ... taking care of 2 or 3 digit value display
         display.setCursor(19, 50);
