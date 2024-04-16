@@ -63,6 +63,8 @@ String pass = WLAN_PASS;
 const String mqttserver = MQTT_SERVER;
 int mqttport = MQTT_PORT;
 int mqttupint = MQTT_UPDATE_INTERVAL * 1000;  // MQTT Update Interval from secrets.h
+long wifiRSSI;
+char signalLevel[16];
 
 
 WiFiClient WIFI_CLIENT;
@@ -110,7 +112,7 @@ void setup() {
   Serial.begin(9600);       // Serial Monitor
   mySerial.begin(9600);     // MaraX Serial Interface
   Serial.println("WiFi connected");
-  //mySerial.write(0x11);  // this is XON Flow Control Chr ... do not use. 
+    //mySerial.write(0x11);  // this is XON Flow Control Chr ... do not use. 
   pinMode(LED_BUILTIN, OUTPUT);
   delay(100);
   //
@@ -211,8 +213,12 @@ void reconnect() {
     // Wait some time to space out connection requests
     delay(500);
   }
-
+  wifiRSSI = WiFi.RSSI();
   Serial.println("MQTT connected");
+  Serial.print(ssid);
+  Serial.print(" Signal Level " );
+  ltoa(wifiRSSI,signalLevel,10); 
+  Serial.println(signalLevel);
 }
 // -----------------------------------------------------------
 void publishMQTT(){
@@ -256,6 +262,9 @@ void publishMQTT(){
       // Pump Status (1+2 Chr)
       maraData[6].toCharArray(pump,3);
       MQTT_CLIENT.publish("fhem/MaraX/pump", pump);
+      //
+      //
+      MQTT_CLIENT.publish("fhem/MaraX/WiFiRxLevel", signalLevel);
       //
       //
       Serial.println("MQTT Data published");
@@ -449,8 +458,14 @@ void updateView() {
       // WiFi Signal
       if (MQTT_CLIENT.connected()) {
       display.drawBitmap(60, 0, wifiicon, 12, 12, WHITE);       // Draw WiFi Icon upper center
+      display.setCursor(75, 2);
+      display.setTextSize(1);
+      display.print(signalLevel);
+      display.print("dB");
       }else {
         display.fillRect(60, 0, 12, 12, BLACK);                 // Clear WiFi Icon when not connected
+        display.setCursor(75, 2);
+        display.print("       ");
       }
 
       //Draw machine mode
