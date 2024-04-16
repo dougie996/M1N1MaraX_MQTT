@@ -12,7 +12,7 @@ Lower part left & right: reported Temperature of Heat Exchanger and Steam Boiler
 As soon the coffee brewing sequence is started, der Steam Temperature display is replaced by a shot timer, counting seconds up and a filling up Coffeecup is shown on the left, together wit the Heat Exchanger Temperature.
 After brewing sequencehas ended, display returns to idle Mode. 
 
-3) The following parameter are sent wie WiFi to a connected MQTT Server
+3) The following parameters are sent via WiFi to a connected MQTT Server
 
       1. Software Version and Mode of Operation
       2. Steam Temp
@@ -24,7 +24,8 @@ After brewing sequencehas ended, display returns to idle Mode.
       8. WiFiRxLevel
 
 4. Configuration can primarily be done via the secrets.h file.
-   It contains Parameters like WiFi SSID and Password and MQTT Server Address & Port. You need to match this based on your requirements.
+   It contains Parameters like WiFi SSID and Password and MQTT Server Address & Port. You can also define the MQTT Update Interval in seconds.
+   You need to match this based on your requirements.
 
    
 
