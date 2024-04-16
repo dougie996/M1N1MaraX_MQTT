@@ -1,5 +1,33 @@
 This is a quick and dirty implementation of a Display and MQTT Client for Lelit MaraX V2 Espresso Machines.
 
+What it does: 
+
+1) In idle mode:
+In the upper left corner is the Heater Status. While heating, a blinking cursor and Text "Heatup" is shown.
+In the upper center a WiFi Icon is shown, together with the WiFi Signal Strength, when connected to WiFi.
+In the upper right the Mara X Mode of operation is shown. A Coffeecup signals Coffee Priority Mode; a Steam Symbol Steam Priority Mode.
+Lower part left & right: reported Temperature of Heat Exchanger and Steam Boiler.
+
+2) In operation mode:
+As soon the coffee brewing sequence is started, der Steam Temperature display is replaced by a shot timer, counting seconds up and a filling up Coffeecup is shown on the left, together wit the Heat Exchanger Temperature.
+After brewing sequencehas ended, display returns to idle Mode. 
+
+3) The following parameter are sent wie WiFi to a connected MQTT Server
+
+      1. Software Version and Mode of Operation
+      2. Steam Temp
+      3. Target Steam Temp
+      4. Heat Exchange Temp
+      5. Heating Boost Mode
+      6. Heating Element on/off
+      7. Pump on/off
+      8. WiFiRxLevel
+
+4. Configuration can primarily be done via the secrets.h file.
+   It contains Parameters like WiFi SSID and Password and MQTT Server Address & Port. You need to match this based on your requirements.
+
+   
+
 Despite many other similar projects, this one is using the correct wiring and coding!
 Please TAKE CARE, as most information in the Web regarding how to interface with MaraX Gicar Control Box is WRONG! 
 
