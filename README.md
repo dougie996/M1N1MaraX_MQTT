@@ -41,5 +41,4 @@ Hardware used is an ESP8266 on a Wemos D1 clone and 128x64 Adafruit SSD1306 SPI 
 ![image](https://github.com/dougie996/M1N1MaraX_MQTT/assets/117717919/8c066df9-6e21-4d42-b458-7699bd4b0714)
 
 
-
-![MaraX_MQTT](https://github.com/dougie996/M1N1MaraX_MQTT/assets/117717919/a794e90c-03ee-4b7a-b04b-ac75f7c3cfe0)
+![MaraX_MQTT_final](https://github.com/dougie996/M1N1MaraX_MQTT/assets/117717919/41279506-7fa4-4b17-8ba5-9439497c996f)
