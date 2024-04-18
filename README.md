@@ -9,12 +9,12 @@ In the upper right the Mara X Mode of operation is shown. A Coffeecup signals Co
 Lower part left & right: reported Temperature of Heat Exchanger and Steam Boiler.
 
 2) In operation mode:
-As soon the coffee brewing sequence is started, der Steam Temperature display is replaced by a shot timer, counting seconds up and a filling up Coffeecup is shown on the left, together wit the Heat Exchanger Temperature.
-After brewing sequencehas ended, display returns to idle Mode. 
+As soon the coffee brewing sequence is started, der Steam Temperature display is replaced by a shot timer, counting seconds up and a filling up Coffeecup is shown on the left, together with the Heat Exchanger Temperature.
+After brewing sequence has ended, the Display returns to idle Mode. 
 
-3) The following parameters are sent via WiFi to a connected MQTT Server
+3) The following parameters are published via WiFi to a connected MQTT Server
 
-      1. Software Version and Mode of Operation
+      1. Mara Software Version and Mode of Operation
       2. Steam Temp
       3. Target Steam Temp
       4. Heat Exchange Temp
@@ -29,8 +29,8 @@ After brewing sequencehas ended, display returns to idle Mode.
 
    
 
-Despite many other similar projects, this one is using the correct wiring and coding!
-Please TAKE CARE, as most information in the Web regarding how to interface with MaraX Gicar Control Box is WRONG! 
+Despite many other similar projects, this one is using the correct Mara X V2 wiring and coding!
+Please TAKE CARE, as most information in the Web regarding how to interface with Mara X Gicar Control Box is WRONG! 
 
 Please also visit https://www.m1n1.de/en/lelit-mara-x-v2-gicar-internals/ for details.
 
