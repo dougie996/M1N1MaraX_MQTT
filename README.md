@@ -34,6 +34,9 @@ Please TAKE CARE, as most information in the Web regarding how to interface with
 
 Please also visit https://www.m1n1.de/en/lelit-mara-x-v2-gicar-internals/ for details.
 
+The Arduino Tx Line / Gicar Rx Line dones not need to be connected. There's no program code inside the Gicar, which would work with data recieved via the serial interface. 
+The Memory of the Gicar Processor is quite full. 50% are already occupied by a huge Table with 921 Values for the Temp Sensor evaluation plus the STM8 Compiler Runtime. 
+
 You need to add your WLAN SSID and Password to the secrets.h file, for getting acces to your WLAN. The Machine will appear in your router as "MaraX".
 Add IP Address and port of your MQTT Broker and desired update interval in seconds.  
 
